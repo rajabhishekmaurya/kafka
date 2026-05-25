@@ -201,3 +201,7 @@ docker-compose down -v
 | Scenario 3           | Zero-Downtime Automated Recovery Loop | Topic Deletion and Recreation sequence                  | PASSED |
 
 ---
+
+**Output Screenshot**
+<img width="1850" height="1053" alt="Screenshot from 2026-05-25 19-24-29" src="https://github.com/user-attachments/assets/b4c2d92f-bdc6-4261-a3b3-748374d968a4" />
+
