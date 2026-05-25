@@ -8,6 +8,12 @@ In enterprise deployments, topics function as Write-Ahead Logs (WAL) containing 
 This repository hardens the replication core to enforce dynamic state validation, executing explicit **Fail-Fast crashes** upon detecting un-replicated data truncation gaps and implementing **graceful, automated recovery loops** after catastrophic topic resets.
 
 ---
+### 1.1 Project Repository & Code Review Links
+
+In compliance with the project specifications, the complete hardened source codebase and granular line-by-line architectural modifications can be reviewed via the public tracking links below:
+
+* **Hardened Kafka Fork Repository:** [https://github.com/rajabhishekmaurya/kafka](https://github.com/rajabhishekmaurya/kafka)
+* **Feature Implementation Pull Request / Code Diff:** [Click Here to View Line-by-Line Code Changes](https://github.com/apache/kafka/compare/trunk...rajabhishekmaurya:kafka:main?expand=1)
 
 ## 2. Design Rationale & MM2 Enhancements
 
