@@ -186,20 +186,6 @@ public class MirrorSourceTask extends SourceTask {
         }
     }
 
-    /**
-     * Triage an OffsetOutOfRangeException raised by the source consumer.
-     *
-     * <ul>
-     *   <li><b>Topic reset</b> (source topic was dropped and recreated): the end offset has
-     *       collapsed below our position and the beginning offset is back at 0. Re-seek
-     *       to 0 so replication can resume against the rebuilt topic.</li>
-     *   <li><b>Log truncation</b> (records we still needed were purged by retention or
-     *       admin delete-records): the beginning offset has moved past our position. There
-     *       is no safe way to recover the missing range, so fail-fast with a
-     *       {@link ConnectException}; vanilla MM2 would silently jump forward and create
-     *       an undetectable gap on the target cluster.</li>
-     * </ul>
-     */
     void handleOutOfRangeOffsets(OffsetOutOfRangeException e) {
         Map<TopicPartition, Long> oorPositions = e.offsetOutOfRangePartitions();
         Set<TopicPartition> partitions = oorPositions.keySet();
@@ -219,7 +205,6 @@ public class MirrorSourceTask extends SourceTask {
                 consumer.seek(tp, 0L);
                 continue;
             }
-
             if (position < begin) {
                 String msg = String.format(
                         "Source log truncation detected for partition %s! "
@@ -229,7 +214,6 @@ public class MirrorSourceTask extends SourceTask {
                 log.error(msg);
                 throw new ConnectException(msg);
             }
-
             log.error("Unexpected out-of-range offset for {}: position={}, beginningOffset={}, endOffset={}. Failing task.",
                     tp, position, begin, end);
             throw new ConnectException("Unexpected out-of-range offset for " + tp);
@@ -269,7 +253,7 @@ public class MirrorSourceTask extends SourceTask {
             offsetSyncWriter.firePendingOffsetSyncs();
         }
     }
-
+    
     private Map<TopicPartition, Long> loadOffsets(Set<TopicPartition> topicPartitions) {
         return topicPartitions.stream().collect(Collectors.toMap(x -> x, this::loadOffset));
     }
@@ -301,7 +285,7 @@ public class MirrorSourceTask extends SourceTask {
             consumer.seek(topicPartition, nextOffsetToCommittedOffset);
         });
     }
-
+    
     // visible for testing
     SourceRecord convertRecord(ConsumerRecord<byte[], byte[]> record) {
         String targetTopic = formatRemoteTopic(record.topic());
