@@ -186,9 +186,16 @@ public class MirrorSourceTask extends SourceTask {
         }
     }
 
+    /*
+     * Handles out-of-range offset exceptions by comparing the current consumer
+     * position against the live boundaries (beginning and end offsets) of the source partitions.
+     */
     void handleOutOfRangeOffsets(OffsetOutOfRangeException e) {
+        // Retrieve the out-of-range positions and their corresponding target partitions
         Map<TopicPartition, Long> oorPositions = e.offsetOutOfRangePartitions();
         Set<TopicPartition> partitions = oorPositions.keySet();
+        
+        // Fetch the absolute earliest (beginning) and latest (end) live offsets from the broker
         Map<TopicPartition, Long> beginningOffsets = consumer.beginningOffsets(partitions);
         Map<TopicPartition, Long> endOffsets = consumer.endOffsets(partitions);
 
@@ -197,6 +204,9 @@ public class MirrorSourceTask extends SourceTask {
             long begin = beginningOffsets.getOrDefault(tp, 0L);
             long end = endOffsets.getOrDefault(tp, 0L);
 
+            // SCENARIO 1: Source topic reset or recreation detected.
+            // If the cursor is past the end but the topic start has defaulted back to 0,
+            // it indicates a fresh start. Auto-heal by resetting the consumer cursor to 0.
             if (position > end && begin == 0L) {
                 log.warn("Source topic reset detected at {} for partition {} "
                         + "(position={}, beginningOffset={}, endOffset={}). "
@@ -253,7 +263,7 @@ public class MirrorSourceTask extends SourceTask {
             offsetSyncWriter.firePendingOffsetSyncs();
         }
     }
-    
+
     private Map<TopicPartition, Long> loadOffsets(Set<TopicPartition> topicPartitions) {
         return topicPartitions.stream().collect(Collectors.toMap(x -> x, this::loadOffset));
     }
@@ -285,7 +295,7 @@ public class MirrorSourceTask extends SourceTask {
             consumer.seek(topicPartition, nextOffsetToCommittedOffset);
         });
     }
-    
+
     // visible for testing
     SourceRecord convertRecord(ConsumerRecord<byte[], byte[]> record) {
         String targetTopic = formatRemoteTopic(record.topic());
