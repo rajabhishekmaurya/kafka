@@ -194,7 +194,6 @@ public class MirrorSourceTask extends SourceTask {
         // Retrieve the out-of-range positions and their corresponding target partitions
         Map<TopicPartition, Long> oorPositions = e.offsetOutOfRangePartitions();
         Set<TopicPartition> partitions = oorPositions.keySet();
-
         // Fetch the absolute earliest (beginning) and latest (end) live offsets from the broker
         Map<TopicPartition, Long> beginningOffsets = consumer.beginningOffsets(partitions);
         Map<TopicPartition, Long> endOffsets = consumer.endOffsets(partitions);
